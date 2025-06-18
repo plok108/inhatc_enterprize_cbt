@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>엔터프라이즈서버관리 CBT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { background: #fafbfc; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
+    /* sticky 헤더 스타일 */
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      border-bottom: 1px solid #eee;
+      padding: 36px 0 24px 0;
+      text-align: center;
+      margin-bottom: 20px;
+      transition: box-shadow 0.2s;
+    }
+    @media (max-width:700px) {
+      .sticky-header { padding: 18px 0 12px 0; }
+    }
+    .cbt-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      flex-wrap: wrap;
+    }
+    .cbt-hero-img {
+      width: 90px;
+      height: 90px;
+      background: url('https://cdn-icons-png.flaticon.com/512/3135/3135715.png') no-repeat center/cover;
+      border-radius: 18px;
+      margin-right: 0;
+      flex-shrink: 0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .cbt-header-info {
+      text-align: left;
+      min-width: 220px;
+    }
+    .cbt-title { font-size: 1.6em; font-weight: bold; margin-bottom: 5px; }
+    .cbt-desc { color: #888; margin-bottom: 10px; }
+    .cbt-header-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .cbt-header-meta span { color: #444; font-size: 1em; }
+    .cbt-check-btn {
+      margin-left: 24px;
+    }
+    .cbt-check-btn button {
+      font-size: 1em;
+      padding: 8px 22px;
+      background: #fff;
+      color: #222;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, border 0.2s;
+    }
+    .cbt-check-btn button:hover {
+      background: #f6f6f6;
+      border: 1px solid #4caf50;
+      color: #388e3c;
+    }
+    .cbt-main { max-width: 600px; margin: 0 auto; }
+    .cbt-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      padding: 30px 32px 20px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+    .cbt-card .q-num {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #4caf50;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cbt-card .result-mark {
+      font-size: 1.2em;
+      font-weight: bold;
+      width: 22px;
+      text-align: center;
+    }
+    .cbt-card .result-mark.correct { color: #4caf50; }
+    .cbt-card .result-mark.incorrect { color: #ff5252; }
+    .cbt-card .q-title { font-size: 1.1em; margin-bottom: 18px; color: #222; }
+    .cbt-card .options label { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
+    .cbt-card .options input[type="radio"] { margin-right: 8px; }
+    .cbt-card input[type="text"], .cbt-card textarea {
+      width: 100%; font-size: 1em; padding: 8px; border-radius: 6px; border: 1px solid #ccc; margin-bottom: 10px;
+      background: #f7f8fa;
+    }
+    .cbt-card textarea { resize: vertical; }
+    .cbt-popup-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .cbt-popup {
+      background: #fff; padding: 36px 28px; border-radius: 12px; min-width: 260px; max-width: 90vw;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.16);
+      text-align: center;
+    }
+    .cbt-popup .score { font-size: 1.5em; font-weight: bold; margin-bottom: 16px; }
+    .cbt-popup button {
+      background: #ff5252; color: #fff; border: none; border-radius: 6px; padding: 8px 18px; cursor: pointer;
+      margin-top: 16px; font-size: 1em;
+    }
+    .cbt-answers {
+      margin: 60px auto 30px auto;
+      max-width: 600px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      padding: 28px 32px;
+      font-size: 1em;
+      color: #444;
+    }
+    .cbt-answers h3 { margin-top: 0; }
+    .cbt-answers ul { padding-left: 16px; }
+    .cbt-answers li { margin-bottom: 12px; }
+    @media (max-width: 700px) {
+      .cbt-main, .cbt-answers { padding: 0 6vw; }
+      .cbt-card { padding: 20px 10px 16px 10px; }
+      .cbt-header-inner { flex-direction: column; gap: 12px; }
+      .cbt-header-info { text-align: center; }
+      .cbt-check-btn { margin-left: 0; margin-top: 10px; }
+      .sticky-header { padding: 18px 0 12px 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- sticky-header 클래스 추가 -->
+  <div class="cbt-header sticky-header">
+    <div class="cbt-header-inner">
+      <div class="cbt-hero-img"></div>
+      <div class="cbt-header-info">
+        <div class="cbt-title">엔터프라이즈서버관리</div>
+        <div class="cbt-desc">엔터프라이즈서버관리 14주차 기말시험 CBT</div>
+        <div class="cbt-header-meta">
+          <span id="remainQ"></span>
+          <span id="elapsedTime"></span>
+          <span class="cbt-check-btn" id="cbtCheckBtn"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cbt-main" id="app"></div>
+  <div class="cbt-answers" id="answersContainer"></div>
+  <div class="cbt-popup-overlay" id="popupOverlay">
+    <div class="cbt-popup">
+      <div class="score" id="popupResult"></div>
+      <button onclick="document.getElementById('popupOverlay').style.display='none'">닫기</button>
+    </div>
+  </div>
+  <script>
+    // 시간 표시
+    let startTime = Date.now();
+    setInterval(() => {
+      const now = Date.now();
+      const sec = Math.floor((now - startTime) / 1000);
+      document.getElementById('elapsedTime').textContent = `경과시간: ${Math.floor(sec/60)}분 ${sec%60}초`;
+    }, 1000);
+
+    // 문제 데이터 (PDF 기준)
+    const examData = {
+      "title": "엔터프라이즈서버관리 14주차 기말시험",
+      "type": "cbt",
+      "sections": [
+        {
+          "type": "short_answer",
+          "questions": [
+            {
+              "id": 1,
+              "question": "명령어 해석기(Command interpreter)로 사용자가 입력한 명령어를 해석하여 커널에 전달하는 것은?",
+              "answer": "셸"
+            },
+            {
+              "id": 2,
+              "question": "컴퓨팅 리소스에 언제 어디서나 필요에 따라 편리하게 네트워크를 통해 접근하는 기능을 제공하는 모델은?",
+              "answer": "클라우드"
+            },
+            {
+              "id": 3,
+              "question": "클라우드의 3가지 서비스 모델은?",
+              "answer": "IaaS, PaaS, SaaS"
+            },
+            {
+              "id": 4,
+              "question": "클라우드의 4가지 배포 모델은?",
+              "answer": "퍼블릭, 프라이빗, 하이브리드, 커뮤니티"
+            },
+            {
+              "id": 5,
+              "question": "특정한 목적을 위해 메모리에 상주하며 실행 중인 프로그램은?",
+              "answer": "프로세스"
+            }
+          ]
+        },
+        {
+          "type": "multiple_choice",
+          "questions": [
+            {
+              "id": 1,
+              "question": "다음 중 셸에 대한 설명으로 틀린 것은?",
+              "options": [
+                "① 커널에서 분리된 별도의 프로그램이며 다양한 종류의 셸이 존재한다.",
+                "② 리눅스에서는 ksh와 csh 계열의 장점을 결합한 bash(Bourne Again Shell)를 표준으로 하고 있다.",
+                "③ 콘셸(korn shell)은 AT&T사의 데이비드 콘(David Korn)이 개발하였다.",
+                "④ 사용자가 로그인 셸을 일시적으로 변경하려면 chsh 명령을 사용하면 된다."
+              ],
+              "answer": 3
+            },
+            {
+              "id": 2,
+              "question": "다음 (        ) 안에 들어갈 설명으로 알맞은 것은?\n(        )은 본셸을 기반으로 GNU 프로젝트에 의해 개발되었으며 GNU 운영체제, 리눅스, 맥OS X 등 다양한 운영체제에서 사용 중이다. 현재 리눅스의 표준 셸이며 명령어 히스토리, 명령어 완성 기능, 명령어 치환, 편집 등을 지원하고 POSIX와도 호환된다.",
+              "options": [
+                "① C셸",
+                "② tcsh셸",
+                "③ ksh셸",
+                "④ bash셸"
+              ],
+              "answer": 3
+            },
+            {
+              "id": 3,
+              "question": "다음 설명과 관련 있는 셸(Shell)의 종류로 알맞은 것은?\n버클리대학의 빌 조이가 개발한 것으로 강력한 프로그램 작성 기능을 가지고 있으며 히스토리, 별명(Alias), 작업 제어 등의 유용한 기능들을 포함하였다.",
+              "options": [
+                "① csh",
+                "② tcsh",
+                "③ ksh",
+                "④ zsh"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 4,
+              "question": "다음에서 설명하는 내용으로 알맞은 것은?\nAT&T사의 데이비드 콘(David Korn)이 개발하였고, 명령어 완성 기능, 히스토리 기능 등을 제공한다.",
+              "options": [
+                "① C셸",
+                "② bash",
+                "③ tcsh",
+                "④ ksh"
+              ],
+              "answer": 3
+            },
+            {
+              "id": 5,
+              "question": "다음 중 명령행 편집 기능을 제공하는 확장 C셸로 알맞은 것은?",
+              "options": [
+                "① csh",
+                "② tcsh",
+                "③ sh",
+                "④ bash"
+              ],
+              "answer": 1
+            },
+            {
+              "id": 6,
+              "question": "다음 중 시스템에서 사용 가능한 셸(Shell)의 목록을 확인하는 명령어로 알맞은 것은?",
+              "options": [
+                "① chsh -l",
+                "② echo $SHELL",
+                "③ ls /etc/shells",
+                "④ cat /etc/shells",
+              ],
+              "answer": 3
+            },
+            {
+              "id": 7,
+              "question": "다음 (        ) 안에 들어갈 내용으로 알맞은 것은?\n# (        ) -s /bin/bash ihd\n# grep user01 /etc/passwd\nihd:x:1000:1000::/home/user01:/bin/bash",
+              "options": [
+                "① usermod",
+                "② chkconfig",
+                "③ adduser",
+                "④ chown"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 8,
+              "question": "$ (        ) -s /bin/bash\nChanging shell for ihd.\nPasswd :\nShell changed.\n$ grep user01 /etc/passwd\nihd:x:1000:1000::/home/user01:/bin/bash",
+              "options": [
+                "① chsh",
+                "② mkfs",
+                "③ groupmod",
+                "④ usermod"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 9,
+              "question": "# cat (            )\n/bin/sh\n/bin/bash\n/bin/tcsh\n/bin/csh\n/bin/ksh",
+              "options": [
+                "① /etc/profile",
+                "② /etc/passwd",
+                "③ /etc/shells",
+                "④ /etc/bashrc"
+              ],
+              "answer": 2
+            },
+            {
+              "id": 10,
+              "question": "다음 중 셸 사용 시 기본으로 지원되는 언어를 확인하는 명령어로 알맞한 것은?",
+              "options": [
+                "① echo $PWD",
+                "② echo $TERM",
+                "③ echo $LANG",
+                "④ echo $USER"
+              ],
+              "answer": 2
+            },
+            {
+              "id": 11,
+              "question": "다음 중 현재 셸에 선언된 모든 환경변수를 확인하는 명령어로 알맞한 것은?",
+              "options": [
+                "① test",
+                "② env",
+                "③ ksh",
+                "④ while"
+              ],
+              "answer": 1
+            },
+            {
+              "id": 12,
+              "question": "다음 조건으로 bash 셸의 변수를 설정하고 확인하려 할 때, 알맞은 것은?\n㉠ city 변수값은 seoul로 지정한다.\n㉡ echo 명령어로 city 변수값을 출력한다.",
+              "options": [
+                "① ㉠ seoul=city   ㉡ echo $CITY",
+                "② ㉠ seoul=city   ㉡ echo $city",
+                "③ ㉠ city=seoul   ㉡ echo $city",
+                "④ ㉠ city=seoul   ㉡ echo $CITY"
+              ],
+              "answer": 2
+            },
+            {
+              "id": 13,
+              "question": "다음 중 셸 환경변수에 대한 설명으로 틀린 것은?",
+              "options": [
+                "① 프롬프트 변경, PATH 변경과 같이 셸의 환경을 정의하는 역할을 수행하는 변수이다.",
+                "② bash에서는 소문자로 된 변수로 구성되어 있다.",
+                "③ 현재 설정된 전체 환경변수의 값은 env 명령으로 확인 가능하다.",
+                "④ 미리 예약된 변수명을 사용한다."
+              ],
+              "answer": 1
+            },
+            {
+              "id": 14,
+              "question": "다음 중 bash에서 사용자가 로그인한 후 일정 시간 동안 작업을 하지 않을 경우에 로그아웃시키는 환경변수로 알맞한 것은?",
+              "options": [
+                "① HOSTNAME",
+                "② TERM",
+                "③ GID",
+                "④ TMOUT"
+              ],
+              "answer": 3
+            },
+            {
+              "id": 15,
+              "question": "다음 중 프롬프트 형식을 현재 사용자 이름과 마지막 작업 디렉터리만 표시하려고 할 때의 설정으로 알맞한 것은?",
+              "options": [
+                "① PS1='[\\u@\\W]\\$ '",
+                "② PS1='[\\h@\\W]\\$ '",
+                "③ PS1='[\\u@\\w]\\$ '",
+                "④ PS1='[\\h@\\w]\\$ '"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 16,
+              "question": "다음 (           ) 안에 들어갈 내용으로 알맞은 것은?\n[root@15:42:13 log]$ echo $PS1\n[\\u@\\t \\W]$\n[root@15:42:17 log]$ PS1='\\u@\\t \\(       )]$ '\n[root@15:42:31 /var/log]$",
+              "options": [
+                "① s",
+                "② w",
+                "③ W",
+                "④ S"
+              ],
+              "answer": 2
+            },
+            {
+              "id": 17,
+              "question": "다음 (           ) 안에 들어갈 내용으로 알맞은 것은?\n(         )(은)는 몇몇 응용프로그램들이 시작할 때 필요한 스크립트가 위치하는 디렉터리로 보통 /etc/profile에서 호출된다.",
+              "options": [
+                "① /etc/profile.d",
+                "② /etc/bashrc",
+                "③ ~/.bash_profile",
+                "④ ~/.bashrc"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 18,
+              "question": "다음에서 설명하는 내용으로 알맞은 것은?\n개별 사용자의 셸 환경을 설정하는 파일로 경로, 환경변수 등이 설정되어 있고 로그인 시 읽어들인다.",
+              "options": [
+                "① /etc/profile",
+                "② ~/.bash_profile",
+                "③ ~/.bash_logout",
+                "④ /etc/bashrc"
+              ],
+              "answer": 1
+            },
+            {
+              "id": 19,
+              "question": "다음 중 아래에 제시한 조건을 갖고 있는 환경설정 파일로 알맞한 것은?\n- 모든 사용자의 셸 환경을 제어하는 전역적인 시스템 설정 파일이다.\n- 반드시 관리자만 설정 가능해야 하며 모든 사용자에게 반영되어야 한다.",
+              "options": [
+                "① /etc/shells",
+                "② /etc/profile",
+                "③ /etc/bash_profile",
+                "④ /etc/bash_logout"
+              ],
+              "answer": 1
+            },
+            {
+              "id": 20,
+              "question": "다음 중 echo $SHELL >> IHD.txt 명령을 실행했을 때의 설명으로 알맞한 것은?",
+              "options": [
+                "① IHD.txt 파일에 $SHELL이라는 내용이 저장된다.",
+                "② 터미널에 현재 사용하는 셸의 경로(Path)와 IHD.txt 파일의 내용이 출력된다.",
+                "③ 현재 사용하는 로그인 셸의 경로(Path)가 IHD.txt 파일에 추가된다.",
+                "④ 터미널에 $SHELL 문자열과 IHD.txt 파일의 내용이 출력된다."
+              ],
+              "answer": 2
+            },
+            {
+              "id": 21,
+              "question": "다음 중 히스토리에 저장된 명령어 목록에서 마지막에 사용한 명령을 실행하는 방법으로 알맞한 것은?",
+              "options": [
+                "① !!",
+                "② !last",
+                "③ !?",
+                "④ !1"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 22,
+              "question": "아래 예제와 같이 history 명령어 수행 시 명령어 수행 시간을 출력하도록 설정하는 명령어는?",
+              "options": [
+                "① export HISTTIMEFORMAT='%Y.%m.%d %T'",
+                "② export HISTFILESIZE='%Y.%m.%d %T'",
+                "③ export HISTFILE='%Y.%m.%d %T'",
+                "④ export HISTSIZE='%Y.%m.%d %T'"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 23,
+              "question": "다음 중 히스토리에 대한 기능 설명으로 틀린 것은?",
+              "options": [
+                "① !! : 히스토리 명령 목록에서 4만큼 거슬러 올라가서 해당 명령을 실행",
+                "② history : 히스토리에 저장된 명령어 목록을 출력",
+                "③ history 10 : 최근에 입력한 마지막 10개의 명령어 목록을 출력",
+                "④ !a : 히스토리 목록 중 a로 시작하는 명령을 찾아서 실행"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 24,
+              "question": "다음 중 최근에 사용한 명령 목록에서 'vi' 문자열을 포함하고 있는 명령을 찾아서 실행하는 것은?",
+              "options": [
+                "① !*vi*",
+                "② !vi!",
+                "③ !*vi",
+                "④ !?vi?"
+              ],
+              "answer": 3
+            },
+            {
+              "id": 25,
+              "question": "다음 중 프로세스의 우선순위를 변경할 때 사용하는 NI 값의 범위로 알맞한 것은?",
+              "options": [
+                "① -20 ~ 20",
+                "② -20 ~ 19",
+                "③ -19 ~ 19",
+                "④ -19 ~ 20"
+              ],
+              "answer": 1
+            },
+            {
+              "id": 26,
+              "question": "다음 설명에 해당하는 명칭으로 가장 알맞은 것은?\n하나의 프로세스가 다른 프로세스를 실행할 때 사용하는 시스템 호출 방법의 하나로서, 새롭게 생성된 프로세스는 호출한 프로세스의 자식 프로세스가 된다.",
+              "options": [
+                "① fork",
+                "② exec",
+                "③ init",
+                "④ systemd"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 27,
+              "question": "다음 중 프로세스에 관련된 설명으로 틀린 것은?",
+              "options": [
+                "① 백그라운드 프로세스로 실행하기 위해 실행 명령 뒤에 ‘&’를 붙인다.",
+                "② 보통 셸에서 명령을 실행하면 포어그라운드 프로세스로 진행된다.",
+                "③ 백그라운드 프로세스로 명령을 실행하면 작업번호와 PID를 반환한다.",
+                "④ 한번 사용자가 실행한 프로세스는 중간에 중지시킬 수 없다."
+              ],
+              "answer": 3
+            },
+            {
+              "id": 28,
+              "question": "다음 중 프로세스에 관련된 설명으로 알맞은 것은?",
+              "options": [
+                "① 특정한 목적을 위해 실행하며 메모리에 상주하는 프로그램이다.",
+                "② 각각의 프로세스들은 실행 시 동일한 PID를 부여받는다.",
+                "③ 사용자의 입력에 관계 없이 실행되는 포어그라운드 프로세스가 있다.",
+                "④ 명령 입력 후 수행 종료까지 기다려야 하는 백그라운드 프로세스가 있다."
+              ],
+              "answer": 0
+            },
+            {
+              "id": 29,
+              "question": "다음 중 포어그라운드 프로세스를 백그라운드 프로세스로 전환하는 키 조합으로 알맞한 것은?",
+              "options": [
+                "① Ctrl + c",
+                "② Ctrl + d",
+                "③ Ctrl + x",
+                "④ Ctrl + z"
+              ],
+              "answer": 3
+            },
+            {
+              "id": 30,
+              "question": "다음 중 할당된 번호값이 가장 큰 시그널로 알맞한 것은?",
+              "options": [
+                "① SIGKILL",
+                "② SIGCONT",
+                "③ SIGINT",
+                "④ SIGTERM"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 31,
+              "question": "다음 중 kill 명령어를 실행할 때 전달되는 기본 시그널 명칭과 조합으로 알맞한 것은?",
+              "options": [
+                "① SIGKILL, 9",
+                "② SIGKILL, 15",
+                "③ SIGTERM, 9",
+                "④ SIGTERM, 15"
+              ],
+              "answer": 3
+            },
+            {
+              "id": 32,
+              "question": "다음 설명에 해당하는 명령으로 알맞한 것은?\nPID 12345인 프로세스의 우선순위값을 -10으로 지정한다.",
+              "options": [
+                "① nice -10 12345",
+                "② nice --10 12345",
+                "③ renice -10 12345",
+                "④ renice --10 12345"
+              ],
+              "answer": 2
+            },
+            {
+              "id": 32,
+              "question": "PID가 1234인 bash 프로세스의 현재 우선순위(NI) 값이 0이다. 다음 중 이 프로세스의 NI 값을 10으로 우선순위를 변경하는 명령으로 알맞은 것은?",
+              "options": [
+                "① nice --5 1234",
+                "② nice -5 1234",
+                "③ nice --5 bash",
+                "④ nice -5 bash"
+              ],
+              "answer": 1
+            },
+            {
+              "id": 33,
+              "question": "다음 명령의 결과에 대한 설명으로 알맞한 것은?\n# nice -5 bash",
+              "options": [
+                "① bash 프로세스의 NI 값을 -5로 변경한다.",
+                "② bash 프로세스의 NI 값을 5로 변경한다.",
+                "③ bash 프로세스의 NI 값을 5만큼 감소시킨다.",
+                "④ bash 프로세스의 NI 값을 5만큼 증가시킨다."
+              ],
+              "answer": 1
+            },
+            {
+              "id": 34,
+              "question": "다음 중 등록된 cron 관련 파일을 삭제하는 명령으로 알맞한 것은?",
+              "options": [
+                "① crontab -l",
+                "② crontab -r",
+                "③ crontab -d",
+                "④ crontab -e"
+              ],
+              "answer": 1
+            },
+            {
+              "id": 35,
+              "question": "다음 중 매주 월요일 오전 4시 정각에 /etc/check.sh 라는 스크립트를 실행하는 crontab 설정으로 알맞한 것은?",
+              "options": [
+                "① * 1 1 4 0 /etc/check.sh",
+                "② 0 4 * * 1 /etc/check.sh",
+                "③ * * 1 0 4 /etc/check.sh",
+                "④ 1 * * 4 1 /etc/check.sh"
+              ],
+              "answer": 1
+            },
+            {
+              "id": 36,
+              "question": "cron을 이용해서 해당 스크립트를 매주 토요일과 일요일 오전 4시 1분에 주기적으로 실행하려고 한다. ( 괄호) 안에 들어갈 내용으로 알맞은 것은?",
+              "options": [
+                "① 1 4 * * 0,6",
+                "② 1 4 * * 5,6",
+                "③ 4 1 * * 0,6",
+                "④ 4 1 * * 5,6"
+              ],
+              "answer": 0
+            },
+            {
+              "id": 37,
+              "question": "cron을 이용해서 점검 스크립트를 매주 수요일부터 금요일까지 오전 1시 2분에 주기적으로 실행하려고 한다. ( 괄호) 안에 들어갈 내용으로 알맞은 것은?",
+              "options": [
+                "① 1 2 * * 3,5",
+                "② 2 1 * * 3,5",
+                "③ 1 2 * * 3-5",
+                "④ 2 1 * * 3-5"
+              ],
+              "answer": 3
+            },
+            {
+              "id": 38,
+              "question": "다음 중 1시간 주기로 실행되는 crontab 설정으로 알맞한 것은?",
+              "options": [
+                "① 1 * * * * /etc/inhatc.sh",
+                "② * 1 * * * /etc/inhatc.sh",
+                "③ * * 1 * * /etc/inhatc.sh",
+                "④ * * * 1 * /etc/inhatc.sh"
+              ],
+              "answer": 0
+            }
+          ]
+        },
+        {
+          "type": "essay",
+          "questions": [
+            {
+              "id": 1,
+              "question": "클라우드의 4가지 배포 모델 중 퍼블릭, 프라이빗, 하이브리드 클라우드에 대해 설명하시오.",
+              "answer": "퍼블릭 클라우드는 클라우드 제공자(CSP)가 공급하는 서버와 저장소 등 IT 리소스를 다수의 사용자가 공유하여 사용하는 모델이다. 프라이빗 클라우드는 특정 기업이나 조직이 독립적으로 인프라를 구축해 사용하는 모델로, 보안과 자원 독점이 가능하다. 하이브리드 클라우드는 퍼블릭 클라우드와 프라이빗 클라우드를 결합하여 사용하는 모델로, 각각의 장점을 활용할 수 있다."
+            },
+            {
+              "id": 2,
+              "question": "클라우드 서버 구성의 장점을 기술하시오.",
+              "answer": "클라우드 서버 구성의 장점은 민첩성, 탄력성, 신속성, 경제성, 가용성과 신뢰성이다. 초기 대규모 IT 투자비용 절감, 온디맨드 방식의 실시간 리소스 할당, 마우스 클릭 몇 번으로 시스템 구축 가능, H/W와 S/W 소유 없이 사용 시간만큼 비용 지불, 서비스 중단 문제 억제 및 백업/복구 체계로 신뢰성 보장, 도입 및 유지보수 리소스 감소 등이 있다."
+            },
+            {
+              "id": 3,
+              "question": "클라우드 네이티브의 4가지 구성 요소를 활용한 장점을 기술하시오.",
+              "answer": "클라우드 네이티브의 4가지 구성 요소는 컨테이너, 마이크로서비스, DevOps, CI/CD이다. 이를 활용하면 시스템의 확장성, 유연성, 신속한 배포와 업데이트, 자동화된 운영 및 관리, 서비스 장애 대응력 향상, 개발 및 운영 효율성 증대 등의 장점이 있다."
+            }
+          ]
+        }
+      ]
+    };
+
+    // 랜덤 출제 함수
+    function getRandomQuestions(questions, count) {
+      const shuffled = [...questions].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
+    }
+
+    // 실제 시험에 출제될 단답형 문제 (5문제 랜덤 순서)
+    const selectedShortAnswer = getRandomQuestions(examData.sections[0].questions, 5);
+
+    // 실제 시험에 출제될 객관식 문제 (39문제 중 7문제 랜덤)
+    const selectedMultipleChoice = getRandomQuestions(examData.sections[1].questions, 7);
+
+    // 실제 시험에 출제될 주관식 문제 (3문제 중 1문제 랜덤)
+    const randomEssayIndex = Math.floor(Math.random() * examData.sections[2].questions.length);
+    const selectedEssay = examData.sections[2].questions[randomEssayIndex];
+
+    // 실제 시험 데이터 생성
+    const actualExamData = {
+      "title": examData.title,
+      "sections": [
+        {
+          "type": "short_answer",
+          "questions": selectedShortAnswer
+        },
+        {
+          "type": "multiple_choice",
+          "questions": selectedMultipleChoice
+        },
+        {
+          "type": "essay",
+          "questions": [selectedEssay]
+        }
+      ]
+    };
+
+    // 남은 문항 표시
+    let totalQuestions = 0;
+    actualExamData.sections.forEach(section => {
+      section.questions.forEach(() => totalQuestions++);
+    });
+    document.getElementById('remainQ').textContent = `남은문항: ${totalQuestions}/${totalQuestions}`;
+
+    // 문제 렌더링
+    const app = document.getElementById('app');
+    actualExamData.sections.forEach((section, sectionIdx) => {
+      let sectionTitle = '';
+      if (section.type === 'short_answer') sectionTitle = '단답형(5문제)';
+      else if (section.type === 'multiple_choice') sectionTitle = '객관식(7문제)';
+      else if (section.type === 'essay') sectionTitle = '주관식서술형(1문제)';
+      
+      const sectionDiv = document.createElement('div');
+      sectionDiv.className = 'section';
+      sectionDiv.innerHTML = `<h2>${sectionTitle}</h2>`;
+      section.questions.forEach((q, qIdx) => {
+        const qDiv = document.createElement('div');
+        qDiv.className = 'cbt-card';
+        qDiv.innerHTML = `
+          <div class="q-num">
+            <span class="result-mark" id="resultMark-${section.type}_${q.id}"></span>
+            <span>${sectionIdx === 0 ? (qIdx + 1) : (sectionIdx === 1 ? (qIdx + 1) : 1)}</span>
+          </div>
+          <div class="q-title">${q.question.replace(/\n/g, '<br>')}</div>
+        `;
+        if (section.type === 'multiple_choice') {
+          qDiv.innerHTML += `
+            <div class="options">
+              ${q.options.map((o, i) => `<label><input type="radio" name="q${section.type}_${q.id}" value="${i}" id="q${section.type}_${q.id}_${i}"> ${o}</label>`).join('')}
+            </div>
+          `;
+        } else if (section.type === 'essay') {
+          qDiv.innerHTML += `<textarea rows="5" id="q${section.type}_${q.id}" placeholder="답을 입력하세요."></textarea>`;
+        } else {
+          qDiv.innerHTML += `<input type="text" id="q${section.type}_${q.id}" placeholder="답을 입력하세요.">`;
+        }
+        sectionDiv.appendChild(qDiv);
+      });
+      app.appendChild(sectionDiv);
+    });
+
+    // 정답(답지) 맨 아래 (실제 출제된 문제만 표시)
+    const answersContainer = document.getElementById('answersContainer');
+    answersContainer.innerHTML = '<h3>정답</h3><ul>';
+    actualExamData.sections.forEach((section, sectionIdx) => {
+      section.questions.forEach((q, qIdx) => {
+        const ans = section.type === 'multiple_choice' && typeof q.answer === 'number'
+          ? q.options[q.answer]
+          : q.answer;
+        answersContainer.innerHTML += `<li><strong>${sectionIdx === 0 ? (qIdx + 1) : (sectionIdx === 1 ? (qIdx + 1) : 1)}. ${q.question}</strong><br>${ans}</li>`;
+      });
+    });
+    answersContainer.innerHTML += '</ul>';
+
+    // 채점 버튼(헤더 우측)
+    const cbtCheckBtn = document.getElementById('cbtCheckBtn');
+    const checkBtn = document.createElement('button');
+    checkBtn.textContent = '채점';
+    checkBtn.onclick = checkAnswers;
+    cbtCheckBtn.appendChild(checkBtn);
+
+    // 채점 함수
+    function checkAnswers() {
+      let score = 0;
+      let total = 0;
+      actualExamData.sections.forEach(section => {
+        section.questions.forEach(q => {
+          total++;
+          const id = `q${section.type}_${q.id}`;
+          let userAnswer, isCorrect = false;
+          const resultMark = document.getElementById(`resultMark-${section.type}_${q.id}`);
+          if (section.type === 'multiple_choice') {
+            const radios = document.querySelectorAll(`input[name="${id}"]`);
+            let selected = -1;
+            radios.forEach((radio, i) => {
+              if (radio.checked) selected = i;
+            });
+            userAnswer = selected;
+            isCorrect = selected === q.answer;
+          } else if (section.type === 'essay') {
+            // 주관식서술형은 정답 예시와 일치하지 않아도 점수 부여하지 않음 (실제 채점은 수동)
+            userAnswer = document.getElementById(id).value.trim();
+            isCorrect = false; // 주관식은 별도 채점하지 않음(예시)
+          } else {
+            userAnswer = document.getElementById(id).value.trim().toLowerCase();
+            // "클라우드의 3가지 서비스 모델은?" 문제만 순서 무관하게 처리
+            if (q.id === 3 && q.question.includes("클라우드의 3가지 서비스 모델")) {
+              const correctAnswers = ["iaas", "paas", "saas"];
+              const userAnswers = userAnswer.split(/[,\s]+/).map(s=>s.trim()).filter(Boolean);
+              isCorrect = correctAnswers.every(ans => userAnswers.includes(ans.toLowerCase()));
+            } else {
+              isCorrect = userAnswer === q.answer.toLowerCase();
+            }
+          }
+          // 결과 마크 표시
+          resultMark.textContent = isCorrect ? 'O' : 'X';
+          resultMark.className = 'result-mark ' + (isCorrect ? 'correct' : 'incorrect');
+          if (isCorrect) score++;
+        });
+      });
+      // 팝업으로 점수 표시
+      document.getElementById('popupResult').innerHTML = `점수: ${score} / ${total}`;
+      document.getElementById('popupOverlay').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>
